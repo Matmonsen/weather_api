@@ -1,0 +1,2 @@
+django
+git+https://git@github.com/Matmonsen/py-yr.git#egg=py-yr
