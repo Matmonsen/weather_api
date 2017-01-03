@@ -5,7 +5,7 @@ from django.test import TestCase
 # Create your tests here.
 from py_yr.config.settings import LANGUAGE, FORECAST_TYPE_STANDARD, FORECAST_TYPE_HOURLY
 
-from api.helper import is_valid_location, is_valid_language, is_valid_forecast_type
+from api.helper import is_valid_location, is_valid_language, is_valid_forecast_type, time_is_less_then_x_minutes_ago
 from api.models import TimeZone, Location, Sun, Credit, Forecast, Precipitation, Pressure, Symbol, Temperature, \
     WindDirection, WindSpeed, Time
 
@@ -250,3 +250,13 @@ class TestHelperSaving(TestCase):
         self.time.save()
         times = Time.objects.all()
         self.assertFalse(len(times) is 0)
+
+
+class TestHelper(TestCase):
+
+    def test_is_younger_then(self):
+        self.assertFalse(time_is_less_then_x_minutes_ago(datetime.datetime.now() + datetime.timedelta(days=2), 10))
+        self.assertTrue(time_is_less_then_x_minutes_ago(datetime.datetime.now(), 10))
+        self.assertFalse(time_is_less_then_x_minutes_ago(datetime.datetime.now(), -10))
+        self.assertFalse(time_is_less_then_x_minutes_ago(datetime.datetime.now(), None))
+        self.assertFalse(time_is_less_then_x_minutes_ago(datetime.datetime.now(), ''))

@@ -1,9 +1,13 @@
+import datetime
+from time import mktime
+from typing import List, Tuple
+import math
 from py_yr.config.settings import LANGUAGE, FORECAST_TYPE_STANDARD, FORECAST_TYPE_HOURLY
 from django.utils.translation import ugettext as _
 from py_yr.yr import Yr
 
 from api.models import Credit, Time, WindSpeed, WindDirection, Temperature, Symbol, Pressure, Precipitation, Forecast, \
-    Location, TimeZone
+    Location, TimeZone, Sun
 
 DAYS = {
     'en': [
@@ -58,7 +62,8 @@ def is_valid_forecast_type(forecast_type) -> tuple:
     Returns (tuple): Validation status and invalid message
 
     """
-    if forecast_type is not None and (forecast_type is FORECAST_TYPE_STANDARD or forecast_type is FORECAST_TYPE_HOURLY):
+    print(forecast_type)
+    if forecast_type is not None and forecast_type in [FORECAST_TYPE_STANDARD , FORECAST_TYPE_HOURLY]:
         return True, ''
 
     return False, _('InvalidForecastType')
@@ -79,16 +84,15 @@ def validate_search_request(language, location, forecast_type) -> tuple:
     valid_language, language_message = is_valid_language(language)
     valid_location, location_message = is_valid_location(location)
     valid_forecast_type, forecast_type_message = is_valid_forecast_type(forecast_type)
-
     return valid_language and valid_location and valid_forecast_type, '{0} {1} {2}'.format(
         forecast_type_message,
         location_message,
         language_message)
 
 
-def save_weather_data(yr_object: Yr) -> None:
+def save_weather_data(yr_object: Yr) -> Tuple[Forecast, List[Time]]:
     """
-        Saves a Yr data object
+        Saves a Yr data object and returns the data
 
         Args:
             yr_object (Yr): An yr object containing weather data
@@ -205,3 +209,91 @@ def save_weather_data(yr_object: Yr) -> None:
         )
         time.save()
         times.append(time)
+    return forecast, times
+
+
+def time_is_less_then_x_minutes_ago(created: datetime, minutes: datetime) -> bool:
+    """
+        Determines if a datetime is less then x minutes ago
+
+        Args:
+            created (datetime.now): Datetime to check
+            minutes (int): Number of minutes
+
+        Examples:
+            >>> date_time = datetime.datetime(2015, 8, 18, 20, 21, 44, 799809)
+            >>> print(time_is_less_then_x_minutes_ago(date_time, 10))
+            False
+            >>> print(time_is_less_then_x_minutes_ago(datetime.datetime.now(), 10))
+            True
+
+        Returns:
+            Bool based on timestamp before or after
+    """
+
+    try:
+        now = datetime.datetime.now()
+
+        # convert to unix timestamp
+        now_ts = mktime(now.timetuple())
+        then_ts = mktime(created.timetuple())
+        print('Now: {0}, then: {1}, answer: {2}'.format(now_ts, then_ts, math.floor(int(now_ts - then_ts))))
+        return math.floor(int(then_ts - now_ts) / 60) <= minutes
+    except (AttributeError, TypeError) as e:
+        return False
+
+
+def cleanup_response(forecasts, language, forecast_type) -> list:
+    """
+        RCleans up the forecasts response.
+        Some forecasts goes seven days, from monday to moday, so we get double values on that day.
+        The actual day, then 7 days ahead.
+        Also assorts each forecast to a weekday
+        Args:
+            forecasts(list): The list containing all of the forecasts.
+            language(str): The language of the weather forecast.
+            forecast_type(str): The forecast type (hourly/standard)
+
+        Returns(list): List of the weather forecast
+
+        """
+
+    # Generates weekdays based on forecast list
+    weekdays = {}
+    for forecast in forecasts:
+        weekday = DAYS[language][forecast.get('start', '').weekday()]
+        try:
+            test_if_key_exists = weekdays[weekday]
+        except KeyError:
+            weekdays[weekday] = {
+                'weekday': weekday,
+                'forecast': []
+            }
+
+    # Add forecast to respective day
+    for forecast in forecasts:
+        weekday = DAYS[language][forecast.get('start', '').weekday()]
+        try:
+            weekdays[weekday]['forecast'].append(forecast)
+        except KeyError:
+            pass
+
+    # Cleans up if some day has more then 4 periods.
+    # Typically a if call week on a thursday the 4.
+    # Then the thursday will have 6 - 8 fields.
+    # With today's date (the 4.) and next week fields 4+7=11.
+    # We remove those next week with this method
+    if forecast_type is FORECAST_TYPE_STANDARD:
+        for i, key in enumerate(weekdays):
+            list_of_forecasts = weekdays[key]['forecast']
+            if len(list_of_forecasts) > 4:
+                # find the smallest date
+                lowest_date = datetime.datetime(2100, 12, 12).date()
+                for elm in list_of_forecasts:
+                    if elm.get('start', lowest_date).date() < lowest_date:
+                        lowest_date = elm.get('start', lowest_date).date()
+
+                # copy new with all those dates
+                weekdays[key]['forecast'] = [elm for elm in list_of_forecasts if elm.get('start', lowest_date).date() == lowest_date]
+
+    return [weekdays[key] for key in weekdays]
