@@ -31,8 +31,16 @@ def is_valid_location(location) -> tuple:
     Returns (tuple): Validation status and invalid message
 
     """
-    if not (location is not None and len(location) > 3 and (
-                    len(location.split('/')) is 3 or len(location.split('/'))) is 4):
+    if location is None:
+        return False, _('InvalidLocation')
+
+    if location.endswith('/'):
+        trimmed_location = location[:-1]
+    else:
+        trimmed_location = location
+
+    params = list(filter(None, trimmed_location.split('/')))
+    if not 3 <= len(params) <= 4:
         return False, _('InvalidLocation')
 
     return True, ''

@@ -13,10 +13,7 @@ from api.models import TimeZone, Location, Sun, Credit, Forecast, Precipitation,
 class TestHelperValidation(TestCase):
     def setUp(self):
         self.valid_location = 'norway/hordaland/bergen/bergen'
-        self.invalid_location_to_few = 'norway/hordaland/'
         self.invalid_location_to_many = 'norway/hordaland/bergen/bergen/bergen'
-        self.invalid_location_empty = '///'
-        self.invalid_location = ''
 
         self.valid_language_en = 'en'
         self.valid_language_nb = 'nb'
@@ -30,10 +27,7 @@ class TestHelperValidation(TestCase):
 
     def test_is_valid_location(self) -> None:
         self.assertTrue(is_valid_location(self.valid_location)[0])
-        self.assertFalse(is_valid_location(self.invalid_location_to_few)[0])
         self.assertFalse(is_valid_location(self.invalid_location_to_many)[0])
-        self.assertFalse(is_valid_location(self.invalid_location_empty)[0])
-        self.assertFalse(is_valid_location(self.invalid_location)[0])
 
     def test_is_valid_language(self) -> None:
         self.assertTrue(is_valid_language(self.valid_language_en)[0])
@@ -55,11 +49,25 @@ class TestHelperValidation(TestCase):
                          and is_valid_location(self.valid_location)[0]
                          and is_valid_forecast_type(self.valid_forecast_type_hourly)[0])
         self.assertFalse(is_valid_language(self.valid_language_en)[0]
-                         and is_valid_location(self.invalid_location)[0]
-                         and is_valid_forecast_type(self.valid_forecast_type_hourly)[0])
-        self.assertFalse(is_valid_language(self.valid_language_en)[0]
                          and is_valid_location(self.valid_location)[0]
                          and is_valid_forecast_type(self.invalid_forecast_type_standard)[0])
+
+    def test_location_special_case(self):
+        self.assertTrue(is_valid_location('norge/hordaland/bergen/bergen/')[0])
+        self.assertTrue(is_valid_location('norge/hordaland/bergen/bergen')[0])
+        self.assertTrue(is_valid_location('norge/oslo/oslo')[0])
+        self.assertTrue(is_valid_location('norge/oslo/oslo/')[0])
+        self.assertFalse(is_valid_location('norge/hordaland/bergen/bergen/bergen')[0])
+        self.assertFalse(is_valid_location('norge/hordaland/bergen/bergen/bergen/')[0])
+        self.assertFalse(is_valid_location('norge/oslo')[0])
+        self.assertFalse(is_valid_location('norge/oslo/')[0])
+        self.assertFalse(is_valid_location('norge')[0])
+        self.assertFalse(is_valid_location('norge/')[0])
+        self.assertFalse(is_valid_location('/')[0])
+        self.assertFalse(is_valid_location('')[0])
+        self.assertFalse(is_valid_location('//')[0])
+        self.assertFalse(is_valid_location('///')[0])
+        self.assertFalse(is_valid_location('///')[0])
 
 
 class TestHelperSaving(TestCase):
