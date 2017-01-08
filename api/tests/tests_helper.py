@@ -56,7 +56,7 @@ class TestHelperValidation(TestCase):
         self.assertTrue(is_valid_location('norge/hordaland/bergen/bergen/')[0])
         self.assertTrue(is_valid_location('norge/hordaland/bergen/bergen')[0])
         self.assertTrue(is_valid_location('spain/catelonia/barcelona')[0])
-        self.assertTrue(is_valid_location('spain/catelonia/barcelona    /')[0])
+        self.assertTrue(is_valid_location('spain/catelonia/barcelona/')[0])
         self.assertFalse(is_valid_location('norge/hordaland/bergen/bergen/bergen')[0])
         self.assertFalse(is_valid_location('norge/hordaland/bergen/bergen/bergen/')[0])
         self.assertFalse(is_valid_location('norge/oslo')[0])
