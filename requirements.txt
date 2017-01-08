@@ -1,2 +1,3 @@
-django
+Django==1.10.4
+django-cors-headers==2.0.0
 git+https://git@github.com/Matmonsen/py-yr.git#egg=py-yr

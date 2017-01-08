@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 
 # Create your tests here.
-from py_yr.config.settings import LANGUAGE, FORECAST_TYPE_STANDARD, FORECAST_TYPE_HOURLY
+from py_yr.config.settings import FORECAST_TYPE_STANDARD, FORECAST_TYPE_HOURLY
 
 from api.helper import is_valid_location, is_valid_language, is_valid_forecast_type, time_is_less_then_x_minutes_ago
 from api.models import TimeZone, Location, Sun, Credit, Forecast, Precipitation, Pressure, Symbol, Temperature, \
