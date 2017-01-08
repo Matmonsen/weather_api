@@ -62,7 +62,6 @@ def is_valid_forecast_type(forecast_type) -> tuple:
     Returns (tuple): Validation status and invalid message
 
     """
-    print(forecast_type)
     if forecast_type is not None and forecast_type in [FORECAST_TYPE_STANDARD , FORECAST_TYPE_HOURLY]:
         return True, ''
 
@@ -237,7 +236,6 @@ def time_is_less_then_x_minutes_ago(created: datetime, minutes: datetime) -> boo
         # convert to unix timestamp
         now_ts = mktime(now.timetuple())
         then_ts = mktime(created.timetuple())
-        print('Now: {0}, then: {1}, answer: {2}'.format(now_ts, then_ts, math.floor(int(now_ts - then_ts))))
         return math.floor(int(then_ts - now_ts) / 60) <= minutes
     except (AttributeError, TypeError) as e:
         return False
@@ -245,8 +243,8 @@ def time_is_less_then_x_minutes_ago(created: datetime, minutes: datetime) -> boo
 
 def cleanup_response(forecasts, language, forecast_type) -> list:
     """
-        RCleans up the forecasts response.
-        Some forecasts goes seven days, from monday to moday, so we get double values on that day.
+        Cleans up the forecasts response.
+        Some forecasts goes seven days, from monday to monday, so we get double values on that day.
         The actual day, then 7 days ahead.
         Also assorts each forecast to a weekday
         Args:

@@ -122,7 +122,7 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = (
-    os.path.join(BASE_DIR, 'locale'),
+    os.path.join(os.path.join(BASE_DIR, 'api'), 'locale'),
 )
 
 
