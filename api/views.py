@@ -64,7 +64,7 @@ def search(request: HttpRequest) -> JsonResponse:
                 format_response(response, time_list, forecast, language, forecast_type)
             else:
                 response['success'] = False
-                response['message'] = 'An error occurred'
+                response['message'] = validate_search_request(language, "", forecast_type)
     except Forecast.DoesNotExist:
         yr = Yr(location, language, forecast_type)
         yr.download()
@@ -73,7 +73,7 @@ def search(request: HttpRequest) -> JsonResponse:
             format_response(response, time_list, forecast, language, forecast_type)
         else:
             response['success'] = False
-            response['message'] = 'An error occurred'
+            response['message'] = validate_search_request(language, "", forecast_type)
 
     return JsonResponse(response)
 
