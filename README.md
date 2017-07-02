@@ -1,3 +1,5 @@
+[![Build Status](https://drone.sindrenerdal.no/api/badges/Matmonsen/weather_api/status.svg)](https://drone.sindrenerdal.no/Matmonsen/weather_api)
+
 # Weather api
 A Django powered API for fetching weather forecasts.  
 Each forecast is cached for 10 minutes.  
