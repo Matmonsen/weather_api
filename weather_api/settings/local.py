@@ -1,5 +1,5 @@
 try:
-	from base import *
+	from .base import *
 except ImportError:
 	pass
 
