@@ -1,10 +1,10 @@
 try:
-	from .base import *
+    from .base import *
 except ImportError:
-	pass
+    pass
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 't(m3r5n&r9mywcxy2^tq8s@nh2)2)0n#%o%w+xg4x*g#ydexvh'
+SECRET_KEY = 'REMEMBER_TO_GENERATE_NEW_SECRET'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
